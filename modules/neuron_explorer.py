@@ -60,12 +60,18 @@ def render_neuron_explorer():
     # -------------------------------------------------
     # Simulation
     # -------------------------------------------------
-    t, x, y = simulate_single_neuron(
-        alpha=alpha,
-        sigma=sigma,
-        mu=mu,
-        n_iter=n_iter
+    result = simulate_single_neuron(
+    alpha=alpha,
+    sigma=sigma,
+    mu=mu,
+    n_iter=n_iter
     )
+
+    t = result.n
+    x = result.x
+    y = result.y
+    x_norm = result.x_norm
+    burst_square = result.burst_square
 
     # -------------------------------------------------
     # Temporal zoom
