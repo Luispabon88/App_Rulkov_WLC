@@ -132,15 +132,24 @@ def render_neuron_explorer():
     ax_phase.grid(True, alpha=0.3)
     st.pyplot(fig_phase)
 
-    st.subheader("4. Señal normalizada y detección de burst")
+    st.subheader("Señal normalizada y detección de burst")
+
+    x_norm_zoom = result.x_norm[n_start:n_end + 1]
+    burst_square_zoom = result.burst_square[n_start:n_end + 1]
+
     fig4, ax4 = plt.subplots(figsize=(8, 3))
-    ax4.plot(result.n, result.x_norm, linewidth=0.8, label="x normalizada")
-    ax4.plot(result.n, result.burst_square, linewidth=0.8, label="burst detectado")
+    ax4.plot(t_zoom, x_norm_zoom, linewidth=0.8, label="x normalizada")
+    ax4.plot(t_zoom, burst_square_zoom, linewidth=0.8, label="burst detectado")
+
     ax4.set_xlabel("n")
     ax4.set_ylabel("valor normalizado")
+    ax4.set_title("Señal normalizada y detección de burst")
     ax4.grid(True, alpha=0.25)
     ax4.legend(loc="upper right")
+
     st.pyplot(fig4, clear_figure=True)
+
+
 
     with st.expander("Ecuaciones usadas en este módulo"):
         st.latex(r"""
