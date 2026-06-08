@@ -163,19 +163,16 @@ def render_neuron_explorer():
             4. Modifique los umbrales de burst y observe cómo cambia la señal cuadrada detectada.
             """
         )
-
-
     
-    # -------------------------------------------------
-    # Actividades
-    # -------------------------------------------------
-    st.subheader("Actividades para interpretación")
+    with st.expander("Actividades para interpretación"):
+        st.markdown(
+            """
+            **Actividad sugerida:**
+         - Varíe **α**, para observar sus acciones sobre las señales.
+         - Varíe **σ** para observar sus acciones sobre las señales.
+         - Varíe **μ** para observar sus acciones sobre las señales.
+         - ¿En qué ayuda a afinar las ventanas temporales de n al análisis de las señales?.
+            """
+        )
 
-    st.markdown(
-        """
-        - Varíe **α**, para observar sus acciones sobre las señales.
-        - Varíe **σ** para observar sus acciones sobre las señales.
-        - Varíe **μ** para observar sus acciones sobre las señales.
-        - ¿En qué ayuda a afinar las ventanas temporales de n al análisis de las señales?.
-        """
-    )
+   
