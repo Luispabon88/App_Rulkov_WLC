@@ -129,7 +129,7 @@ def render_neuron_explorer():
     ax_phase.grid(True, alpha=0.3)
     st.pyplot(fig_phase)
 
-     st.subheader("4. Señal normalizada y detección de burst")
+    st.subheader("4. Señal normalizada y detección de burst")
     fig4, ax4 = plt.subplots(figsize=(8, 3))
     ax4.plot(result.n, result.x_norm, linewidth=0.8, label="x normalizada")
     ax4.plot(result.n, result.burst_square, linewidth=0.8, label="burst detectado")
