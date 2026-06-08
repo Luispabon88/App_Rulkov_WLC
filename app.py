@@ -25,7 +25,7 @@ page = st.sidebar.radio(
     ],
 )
 
-if page == "Módulo 1 · Neurona individual de Rulkov":
+if page == "Módulo 1 · Neurona individual":
     render_neuron_explorer()
 else:
     st.info("Este módulo será añadido después. Primero se validará el modelo de una neurona.")
