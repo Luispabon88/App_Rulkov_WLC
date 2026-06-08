@@ -82,8 +82,9 @@ def render_neuron_explorer():
     alpha=alpha,
     sigma=sigma,
     mu=mu,
-    n_iter=n_iter
-    )
+    n_iter=n_iter,
+    upper_threshold=upper,
+    lower_threshold=lower)
 
     t = result.n
     x = result.x
