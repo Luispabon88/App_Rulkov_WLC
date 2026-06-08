@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils.rulkov import simulate_single_neuron
 
 
-def run_neuron_explorer():
+def render_neuron_explorer():
     st.header("Module 1: Single Rulkov Neuron Explorer")
 
     st.markdown(
