@@ -96,7 +96,7 @@ def render_neuron_explorer():
         min_value=0,
         max_value=len(t) - 1,
         value=(default_start, len(t) - 1),
-        step=1,
+        step=100,
     )
 
     t_zoom = t[n_start:n_end + 1]
@@ -145,10 +145,9 @@ def render_neuron_explorer():
 
     st.markdown(
         """
-        En esta sección, la señal se normaliza **dentro de la ventana temporal seleccionada**.
-        Esto corrige el problema donde el transitorio inicial dominaba la normalización
-        y hacía que los umbrales no detectaran correctamente los pulsos posteriores.
-        """
+        En esta sección, se busca la normalización de la señal x(n) **dentro de la ventana temporal seleccionada**, previo al paso de 
+        detección de WLC.
+         """
     )
 
     col_thr1, col_thr2, col_thr3 = st.columns(3)
@@ -183,7 +182,7 @@ def render_neuron_explorer():
     metric_col3.metric("Lower threshold", f"{lower:.2f}")
 
     fig_pulse, ax_pulse = plt.subplots(figsize=AIP_DOUBLE_COLUMN)
-    ax_pulse.plot(t_zoom, x_norm_zoom, linewidth=0.85, color=x_color, label="x(n) normalizada")
+    ax_pulse.plot(t_zoom, x_norm_zoom, linewidth=0.85, color=x_color, label="x(n)")
     ax_pulse.step(
         t_zoom,
         pulse_zoom,
@@ -194,12 +193,12 @@ def render_neuron_explorer():
     )
     ax_pulse.axhline(upper, linestyle="--", linewidth=0.8, color="black", label="upper")
     ax_pulse.axhline(lower, linestyle=":", linewidth=0.9, color="black", label="lower")
-    _configure_axes(ax_pulse, "n", "valor normalizado", "Señal normalizada y detector de pulsos")
+    _configure_axes(ax_pulse, "n", "x(n), x(n) norm", "Membrana Neuronal muestreada con detector de pulsos")
     ax_pulse.set_ylim(-0.05, 1.05)
     ax_pulse.legend(loc="upper right", fontsize=8)
     _show_plot_with_download(fig_pulse, "rulkov_pulse_detector.png", "download_pulse")
 
-    with st.expander("Ecuaciones usadas en este módulo"):
+    with st.expander("Modelo No Caótico de Rulkov"):
         st.latex(r"""
         x_{n+1}=
         \begin{cases}
