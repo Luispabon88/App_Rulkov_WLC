@@ -56,6 +56,24 @@ def render_neuron_explorer():
         value=5000,
         step=500
     )
+
+    st.subheader("Detección de burst")
+
+    upper = st.slider(
+    "Upper threshold",
+    min_value=0.50,
+    max_value=0.95,
+    value=0.80,
+    step=0.01
+    )
+
+    lower = st.slider(
+    "Lower threshold",
+    min_value=0.01,
+    max_value=upper - 0.05,
+    value=0.10,
+    step=0.01
+    )
    
     # -------------------------------------------------
     # Simulation
@@ -130,20 +148,6 @@ def render_neuron_explorer():
     st.pyplot(fig_phase)
 
     st.subheader("Señal normalizada y detección de burst")
-
-    upper = st.slider(
-    "Upper threshold",
-    0.50,
-    0.95,
-    0.80,
-    0.01)
-    lower = st.slider(
-    "Lower threshold",
-    0.01,
-    upper - 0.05,
-    0.10,
-    0.01
-    )
 
     x_norm_zoom = result.x_norm[n_start:n_end + 1]
     burst_square_zoom = result.burst_square[n_start:n_end + 1]
