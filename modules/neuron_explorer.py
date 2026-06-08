@@ -153,7 +153,7 @@ def render_neuron_explorer():
     burst_square_zoom = result.burst_square[n_start:n_end + 1]
 
     fig4, ax4 = plt.subplots(figsize=(8, 3))
-    ax4.plot(t_zoom, x_norm_zoom, linewidth=0.8, label="x normalizada")
+    ax4.plot(t_zoom, x_norm_zoom, linewidth=0.8, label="x(n)")
     ax4.plot(t_zoom, burst_square_zoom, linewidth=0.8, label="burst detectado")
 
     ax4.set_xlabel("n")
