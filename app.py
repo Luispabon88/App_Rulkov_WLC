@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Rulkov Interactive Lab")
+st.title("🐢Rulkov Interactive Lab")
 st.caption("Simulador educativo para Modelo de Rulkov")
 
 page = st.sidebar.radio(
