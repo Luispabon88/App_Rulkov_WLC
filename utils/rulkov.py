@@ -1,8 +1,9 @@
 """
 Utilities for the simplified non-chaotic Rulkov map used in the WLC project.
 
-This file intentionally separates the mathematical model from the Streamlit UI.
-The first educational module uses only one uncoupled neuron.
+This file separates the mathematical model from the Streamlit UI.
+The first educational module uses one uncoupled neuron and includes a
+robust pulse/burst detector intended to be reused before the WLC module.
 """
 
 from __future__ import annotations
@@ -21,7 +22,13 @@ class RulkovResult:
     burst_square: np.ndarray
 
 
-def _rulkov_x_next(x_prev: float, x_prev2: float, y_prev: float, alpha: float, coupling_beta: float = 0.0) -> float:
+def _rulkov_x_next(
+    x_prev: float,
+    x_prev2: float,
+    y_prev: float,
+    alpha: float,
+    coupling_beta: float = 0.0,
+) -> float:
     """Piecewise simplified Rulkov fast variable update."""
     threshold = alpha + y_prev + coupling_beta
 
@@ -34,47 +41,108 @@ def _rulkov_x_next(x_prev: float, x_prev2: float, y_prev: float, alpha: float, c
     return -1.0
 
 
-def normalize_signal(x: np.ndarray) -> np.ndarray:
-    """Normalize a signal between 0 and 1, avoiding division by zero."""
-    xmin = np.min(x)
-    xmax = np.max(x)
+def normalize_signal(
+    x: np.ndarray,
+    method: str = "minmax",
+    p_low: float = 1.0,
+    p_high: float = 99.0,
+) -> np.ndarray:
+    """
+    Normalize a signal between 0 and 1.
+
+    Parameters
+    ----------
+    x:
+        Input signal.
+    method:
+        "minmax" uses the absolute minimum and maximum.
+        "percentile" uses percentile limits, which reduces the effect of
+        isolated transient peaks.
+    p_low, p_high:
+        Percentiles used when method="percentile".
+    """
+    x = np.asarray(x, dtype=float)
+
+    if x.size == 0:
+        return x.copy()
+
+    if method == "percentile":
+        xmin = np.percentile(x, p_low)
+        xmax = np.percentile(x, p_high)
+    else:
+        xmin = np.min(x)
+        xmax = np.max(x)
+
     if np.isclose(xmax, xmin):
         return np.zeros_like(x, dtype=float)
-    return (x - xmin) / (xmax - xmin)
+
+    x_norm = (x - xmin) / (xmax - xmin)
+    return np.clip(x_norm, 0.0, 1.0)
+
+
+def detect_burst_square_from_normalized(
+    x_norm: np.ndarray,
+    upper_threshold: float = 0.80,
+    lower_threshold: float = 0.10,
+    min_width: int = 1,
+) -> np.ndarray:
+    """
+    Detect active pulse/burst intervals from an already-normalized signal.
+
+    A pulse starts when x_norm crosses the upper threshold and remains active
+    until x_norm falls below the lower threshold. This hysteresis avoids rapid
+    on/off switching around a single threshold.
+    """
+    if lower_threshold >= upper_threshold:
+        raise ValueError("lower_threshold must be smaller than upper_threshold.")
+
+    x_norm = np.asarray(x_norm, dtype=float)
+    burst = np.zeros(len(x_norm), dtype=float)
+    in_burst = False
+    start = 0
+
+    for i, value in enumerate(x_norm):
+        if (not in_burst) and (value >= upper_threshold):
+            in_burst = True
+            start = i
+        elif in_burst and (value <= lower_threshold):
+            end = i
+            if end - start >= min_width:
+                burst[start:end + 1] = 1.0
+            in_burst = False
+
+    if in_burst:
+        end = len(x_norm) - 1
+        if end - start >= min_width:
+            burst[start:end + 1] = 1.0
+
+    return burst
 
 
 def detect_burst_square(
     x: np.ndarray,
     upper_threshold: float = 0.80,
     lower_threshold: float = 0.10,
+    normalize_method: str = "minmax",
+    min_width: int = 1,
 ) -> np.ndarray:
-    """
-    Convert the normalized membrane potential into a square burst indicator.
+    """Normalize x and return a square pulse/burst indicator."""
+    x_norm = normalize_signal(x, method=normalize_method)
+    return detect_burst_square_from_normalized(
+        x_norm=x_norm,
+        upper_threshold=upper_threshold,
+        lower_threshold=lower_threshold,
+        min_width=min_width,
+    )
 
-    1 means the signal is inside a burst interval; 0 means inactive/silent segment.
-    """
-    x_norm = normalize_signal(x)
-    burst = np.zeros(len(x_norm), dtype=float)
-    starts: list[int] = []
-    ends: list[int] = []
-    in_burst = False
 
-    for i, value in enumerate(x_norm):
-        if value > upper_threshold and not in_burst:
-            starts.append(i)
-            in_burst = True
-        elif value < lower_threshold and in_burst:
-            ends.append(i)
-            in_burst = False
-
-    if in_burst:
-        ends.append(len(x_norm) - 1)
-
-    for start, end in zip(starts, ends):
-        if end > start:
-            burst[start:end] = 1.0
-
-    return burst
+def count_pulses(square_signal: np.ndarray) -> int:
+    """Count rising edges in a square pulse signal."""
+    s = np.asarray(square_signal, dtype=float)
+    if s.size == 0:
+        return 0
+    previous = np.r_[0.0, s[:-1]]
+    return int(np.sum((previous <= 0.0) & (s > 0.0)))
 
 
 def simulate_single_neuron(
@@ -96,10 +164,6 @@ def simulate_single_neuron(
         x[n+1] = -1, otherwise
 
         y[n+1] = y[n] - mu*(x[n] + 1) + mu*sigma
-
-    Notes:
-        This matches the single-neuron limit of the RulkovMapV4 notebook model,
-        with coupling terms set to zero.
     """
     n_iter = int(n_iter)
     if n_iter < 3:
@@ -109,17 +173,25 @@ def simulate_single_neuron(
     x = np.zeros(n_iter, dtype=float)
     y = np.zeros(n_iter, dtype=float)
 
-    # Initial values. x[0] and x[1] are both initialized to avoid ambiguity in x[n-1].
     x[0] = x0
     y[0] = y0
     x[1] = _rulkov_x_next(x_prev=x[0], x_prev2=x0, y_prev=y[0], alpha=alpha)
     y[1] = y[0] - mu * (x[0] + 1.0) + mu * sigma
 
     for k in range(2, n_iter):
-        x[k] = _rulkov_x_next(x_prev=x[k - 1], x_prev2=x[k - 2], y_prev=y[k - 1], alpha=alpha)
+        x[k] = _rulkov_x_next(
+            x_prev=x[k - 1],
+            x_prev2=x[k - 2],
+            y_prev=y[k - 1],
+            alpha=alpha,
+        )
         y[k] = y[k - 1] - mu * (x[k - 1] + 1.0) + mu * sigma
 
-    x_norm = normalize_signal(x)
-    burst_square = detect_burst_square(x, upper_threshold, lower_threshold)
+    x_norm = normalize_signal(x, method="minmax")
+    burst_square = detect_burst_square_from_normalized(
+        x_norm,
+        upper_threshold=upper_threshold,
+        lower_threshold=lower_threshold,
+    )
 
     return RulkovResult(n=n, x=x, y=y, x_norm=x_norm, burst_square=burst_square)
