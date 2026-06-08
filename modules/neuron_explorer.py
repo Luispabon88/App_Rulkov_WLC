@@ -129,6 +129,43 @@ def render_neuron_explorer():
     ax_phase.grid(True, alpha=0.3)
     st.pyplot(fig_phase)
 
+     st.subheader("4. Señal normalizada y detección de burst")
+    fig4, ax4 = plt.subplots(figsize=(8, 3))
+    ax4.plot(result.n, result.x_norm, linewidth=0.8, label="x normalizada")
+    ax4.plot(result.n, result.burst_square, linewidth=0.8, label="burst detectado")
+    ax4.set_xlabel("n")
+    ax4.set_ylabel("valor normalizado")
+    ax4.grid(True, alpha=0.25)
+    ax4.legend(loc="upper right")
+    st.pyplot(fig4, clear_figure=True)
+
+    with st.expander("Ecuaciones usadas en este módulo"):
+        st.latex(r"""
+        x_{n+1}=
+        \begin{cases}
+        \dfrac{\alpha}{1-x_n}+y_n, & x_n\le 0,\\
+        \alpha+y_n, & 0<x_n<\alpha+y_n \; \text{and}\; x_{n-1}\le0,\\
+        -1, & \text{otherwise.}
+        \end{cases}
+        """)
+        st.latex(r"""
+        y_{n+1}=y_n-\mu(x_n+1)+\mu\sigma
+        """)
+
+    with st.expander("Guía para estudiantes"):
+        st.markdown(
+            """
+            **Actividad sugerida:**
+
+            1. Fije μ = 0.001 y σ = -0.2. Varíe α entre 2 y 8. Describa qué cambia en x(n).  
+            2. Fije α = 6.0 y μ = 0.001. Varíe σ entre -1 y 1. Observe si cambia la frecuencia de activación.  
+            3. Compare la serie temporal con el retrato de fase. Explique qué información aporta cada gráfico.  
+            4. Modifique los umbrales de burst y observe cómo cambia la señal cuadrada detectada.
+            """
+        )
+
+
+    
     # -------------------------------------------------
     # Actividades
     # -------------------------------------------------
