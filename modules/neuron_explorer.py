@@ -57,8 +57,8 @@ def render_neuron_explorer():
         step=500
     )
     st.subheader("Detección de burst")
-        upper = st.slider("Umbral superior", min_value=0.50, max_value=0.95, value=0.80, step=0.01)
-        lower = st.slider("Umbral inferior", min_value=0.01, max_value=0.40, value=0.10, step=0.01)
+    upper = st.slider("Umbral superior", min_value=0.50, max_value=0.95, value=0.80, step=0.01)
+    lower = st.slider("Umbral inferior", min_value=0.01, max_value=0.40, value=0.10, step=0.01)
 
     # -------------------------------------------------
     # Simulation
